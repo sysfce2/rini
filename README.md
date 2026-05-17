@@ -22,7 +22,7 @@ Multiple configuration options are available through `#define` values.
  - Support custom description custom delimiter
  - Support multi-word text values w/o quote delimiters
  - Minimal C standard lib dependency (optional)
- - Customizable maximum values capacity
+ - Customizable maximum entries capacity
 
 ## configuration
 
@@ -32,10 +32,10 @@ Generates the implementation of the library into the included file.
 If not defined, the library is in header only mode and can be included in other headers
 or source files without problems. But only ONE file should hold the implementation.
 
-`#define RINI_MAX_VALUE_CAPACITY`
+`#define RINI_MAX_ENTRY_CAPACITY`
 
 Define the maximum capacity of key-value data structure, customizable by user.
-Default value: 32 entries support
+Default value: 256 entries supported
 
 `#define RINI_MAX_TEXT_FILE_SIZE`
 
@@ -144,12 +144,12 @@ int main()
     rini_data config = rini_load(NULL);
 
     // Define header comment lines
-    rini_set_comment_line(&config, NULL);   // Empty comment line, but including comment prefix delimiter
+    rini_set_comment_line(&config, " "); // Empty comment line, but including comment prefix delimiter
     rini_set_comment_line(&config, "rTexViewer initialization configuration options");
-    rini_set_comment_line(&config, NULL);
+    rini_set_comment_line(&config, " ");
     rini_set_comment_line(&config, "NOTE: This file is loaded at application startup,");
     rini_set_comment_line(&config, "if file is not found, default values are applied");
-    rini_set_comment_line(&config, NULL);
+    rini_set_comment_line(&config, " ");
 
     // Define values
     rini_set_value(&config, "SHOW_WINDOW_SPONSORS", 1, "Show sponsors window at initialization");
