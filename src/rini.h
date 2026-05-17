@@ -31,9 +31,13 @@
 *           If not defined, the library is in header only mode and can be included in other headers
 *           or source files without problems. But only ONE file should hold the implementation.
 *
+*       #define RINI_MAX_ENTRY_CAPACITY
+*           Defines the maximum number of values supported
+*           Default value: 256 entries support
+*
 *       #define RINI_MAX_LINE_SIZE
 *           Defines the maximum size of line buffer to read from file.
-*           Default value: 512 bytes (considering [key + text + desc] is 256 max size by default)
+*           Default value: 512 bytes (considering [key + text + desc] + spacing + quotes)
 *
 *       #define RINI_MAX_KEY_SIZE
 *           Defines the maximum size of value key
@@ -47,13 +51,17 @@
 *           Defines the maximum size of value description
 *           Default value: 256 bytes
 *
-*       #define RINI_MAX_ENTRY_CAPACITY
-*           Defines the maximum number of values supported
-*           Default value: 256 entries support
-*
 *       #define RINI_MAX_TEXT_FILE_SIZE
 *           Define the maximum size of the file that is saved in memory
 *           Default value: 4096 bytes
+*
+*       #define RINI_KEY_SPACING
+*           Total space reserved for Key, Value starts after this spacing
+*           Default value: 36 spaces
+*
+*       #define RINI_VALUE_SPACING
+*           Total space reserved for Value, Description starts after this spacing
+*           Default value: 32 spaces
 *
 *       #define RINI_LINE_COMMENT_DELIMITER
 *           Define character used to comment lines, placed at beginning of line
@@ -84,12 +92,12 @@
 *   DEPENDENCIES: C standard library:
 *       - stdio.h: fopen(), feof(), fgets(), fclose(), fprintf()
 *       - stdlib.h: malloc(), calloc(), free()
-*       - string.h: memset(), memcpy(), strcmp(), strlen()
+*       - string.h: memset(), memcpy(), strcmp(), strlen(), snprintf()
 *
 *   VERSIONS HISTORY:
-*       3.0 (xx-May-2026) ADDED: rini_data rini_load_full() to load comments and empty lines
-*                         ADDED: Flag to consider a text entry as text
-*                         ADDED: Key and Value spacing defines
+*       3.0 (17-May-2026) ADDED: rini_load_full() to include comments and empty lines
+*                         ADDED: Flag to consider a entry text as text (or integer value)
+*                         ADDED: New key and value custom spacing defines
 *                         RENAMED: Values to Entries in full data structure
 *                         REDESIGNED: Improved comments support: empty lines, empty comments, comments
 *                         REDESIGNED: Support updating values from a loaded rini
@@ -172,26 +180,33 @@
   #define RINI_LOG(...)
 #endif
 
+// Max number of entries for a rini file
 #if !defined(RINI_MAX_ENTRY_CAPACITY)
     #define RINI_MAX_ENTRY_CAPACITY         256
 #endif
 
+// Max entry line size in bytes
+// NOTE: It includes key-text-desc + spacing and quotation if required
 #if !defined(RINI_MAX_LINE_SIZE)
     #define RINI_MAX_LINE_SIZE              512
 #endif
 
+// Max entry key size in bytes
 #if !defined(RINI_MAX_KEY_SIZE)
     #define RINI_MAX_KEY_SIZE                64
 #endif
 
+// Max entry text size in bytes
 #if !defined(RINI_MAX_TEXT_SIZE)
     #define RINI_MAX_TEXT_SIZE              256
 #endif
 
+// Max entry description size in bytes 
 #if !defined(RINI_MAX_DESC_SIZE)
     #define RINI_MAX_DESC_SIZE              256
 #endif
 
+// rini text file max size
 #if !defined(RINI_MAX_TEXT_FILE_SIZE)
     #define RINI_MAX_TEXT_FILE_SIZE        4096
 #endif
@@ -201,6 +216,7 @@
 #if !defined(RINI_KEY_SPACING)
     #define RINI_KEY_SPACING                 36
 #endif
+
 // Total space reserved for Value,
 // Description starts after this spacing
 #if !defined(RINI_VALUE_SPACING)
