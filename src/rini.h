@@ -629,6 +629,7 @@ char *rini_save_to_memory(rini_data data)
     static char text[RINI_MAX_TEXT_FILE_SIZE] = { 0 };
     memset(text, 0, RINI_MAX_TEXT_FILE_SIZE);
     int offset = 0;
+    int expectedByteWritten = 0;
 
     char valuestr[RINI_MAX_TEXT_SIZE + 2] = { 0 }; // Useful for text processing, adding quotation marks if required
 
@@ -636,8 +637,8 @@ char *rini_save_to_memory(rini_data data)
     {
         if ((data.entries[i].key[0] == '\0') && (data.entries[i].text[0] == RINI_LINE_COMMENT_DELIMITER))
         {
-            if (data.entries[i].desc[0] != '\0') offset += snprintf(text + offset, RINI_MAX_LINE_SIZE, "%c %s\n", RINI_LINE_COMMENT_DELIMITER, data.entries[i].desc);
-            else offset += snprintf(text + offset, RINI_MAX_LINE_SIZE, "%c\n", RINI_LINE_COMMENT_DELIMITER);
+            if (data.entries[i].desc[0] != '\0') expectedByteWritten = snprintf(text + offset, RINI_MAX_LINE_SIZE, "%c %s\n", RINI_LINE_COMMENT_DELIMITER, data.entries[i].desc);
+            else expectedByteWritten = snprintf(text + offset, RINI_MAX_LINE_SIZE, "%c\n", RINI_LINE_COMMENT_DELIMITER);
         }
         else
         {
@@ -651,17 +652,20 @@ char *rini_save_to_memory(rini_data data)
             // Add description if required
             if (data.entries[i].desc[0] != '\0')
             {
-                offset += snprintf(text + offset, RINI_MAX_LINE_SIZE, "%-*s %c %-*s %c %s\n", RINI_KEY_SPACING, data.entries[i].key, RINI_VALUE_DELIMITER,
+                expectedByteWritten = snprintf(text + offset, RINI_MAX_LINE_SIZE, "%-*s %c %-*s %c %s\n", RINI_KEY_SPACING, data.entries[i].key, RINI_VALUE_DELIMITER,
                         RINI_VALUE_SPACING, data.entries[i].is_text? valuestr : data.entries[i].text,
                         RINI_DESCRIPTION_DELIMITER, data.entries[i].desc);
             }
             else
             {
                 // No description required
-                offset += snprintf(text + offset, RINI_MAX_LINE_SIZE, "%-*s %c %s\n", RINI_KEY_SPACING, data.entries[i].key, RINI_VALUE_DELIMITER,
+                int expectedByteWritten = snprintf(text + offset, RINI_MAX_LINE_SIZE, "%-*s %c %s\n", RINI_KEY_SPACING, data.entries[i].key, RINI_VALUE_DELIMITER,
                         data.entries[i].is_text? valuestr : data.entries[i].text);
             }
         }
+        
+        if (expectedByteWritten >= RINI_MAX_LINE_SIZE) offset += RINI_MAX_LINE_SIZE;
+        else offset += expectedByteWritten;
     }
 
     return text;
